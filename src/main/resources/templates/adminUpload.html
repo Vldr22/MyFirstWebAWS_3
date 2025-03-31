@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>upload</title>
+</head>
+
+<style>
+    body {
+        background: linear-gradient(90deg, rgb(12, 2, 2), rgb(245, 76, 2));
+        font-family: Arial, sans-serif;
+        color: #f3c706;
+    }
+
+    h2 {
+        max-width: 1400px;
+        margin: auto;
+        padding: 0 2rem;
+        overflow: hidden;
+    }
+
+    h3 {
+        max-width: 1400px;
+        margin: auto;
+        padding: 0 2rem;
+        overflow: hidden;
+    }
+
+</style>
+
+<body>
+
+<h1>Upload</h1>
+
+<hr/>
+
+<h2>Upload Single File:</h2>
+<form method="POST" enctype="multipart/form-data" th:action="@{upload/file}">
+    <input type="file" name="file"> <br/><br/>
+    <button type="submit">Submit</button>
+</form>
+
+<hr/>
+<h3>Upload Multiple Files:</h3>
+<form method="POST" enctype="multipart/form-data" th:action="@{upload/multiple-files}">
+    <input type="file" name="files" multiple> <br/><br/>
+    <button type="submit">Submit</button>
+</form>
+<hr/>
+
+</body>
+</html>

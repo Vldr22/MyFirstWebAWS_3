@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Registration</title>
+</head>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        color: #f3c706;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f0f2f5 linear-gradient(90deg, rgb(12, 2, 2), rgb(245, 76, 2));
+    }
+
+    .form-container {
+        background: rgb(255, 255, 255);
+        padding: 40px 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgb(12, 2, 2);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .form-container div {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    .form-container label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+    }
+
+    .form-container input[type="text"],
+    .form-container input[type="password"] {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .form-container input[type="submit"] {
+        width: 100%;
+        padding: 12px 0;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        color: #ffffff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .form-container input[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    .form-container a {
+        display: block;
+        margin-top: 15px;
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .form-container a:hover {
+        text-decoration: underline;
+    }
+
+    .btn-sign-in {
+        width: 100%;
+        padding: 12px 0;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        color: #ffffff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+
+</style>
+
+<body>
+<div class="form-container">
+    <h2>Registration</h2>
+    <form th:action="@{/registration}" method="post" th:object="${userForm}">
+        <div>
+            <label>Enter name</label>
+            <label>
+                <input type="text" placeholder="Enter name" th:field="*{username}"/>
+            </label>
+            <p th:errors="*{username}" th:if="${#fields.hasErrors('username')}"></p>
+            Пользователь с таким именем уже существует!
+        </div>
+        <div>
+            <label>Enter password</label>
+            <label>
+                <input type="password" placeholder="Enter password" th:field="*{password}"/>
+            </label>
+            <p th:errors="*{password}" th:if="${#fields.hasErrors('password')}"></p>
+        </div>
+        <button type="submit" class="btn-sign-in">Sign Up</button>
+    </form>
+</div>
+</body>
+</html>

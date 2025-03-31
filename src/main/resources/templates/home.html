@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<head>
+    <meta charset="UTF-8">
+    <title>home</title>
+</head>
+
+<style>
+    body {
+        background: linear-gradient(90deg, rgb(12, 2, 2), rgb(245, 76, 2));
+        font-family: Arial, sans-serif;
+        color: #f3c706;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: auto;
+        padding: 0 2rem;
+        overflow: hidden;
+    }
+
+    h1 {
+        padding: 1rem;
+        text-align: center;
+        font-size: 5rem;
+        position: relative;
+        color: #f3c706;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        margin-left: 10px;
+        color: #ffffff;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .btn:hover {
+        background-color: #93844e;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+    }
+
+    .btn-add {
+        background-color: #93844e;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    table thead {
+        font-family: 'Lobster', cursive;
+        background-color: #0c0202;
+        color: #ee0808;
+        font-size: 1.5rem;
+    }
+
+    table th, table td {
+        border: 2px solid #ffffff;
+        padding: 14px 12px;
+        color: #f3c706;
+    }
+
+    table tbody td {
+        font-size: 20px;
+    }
+
+    table tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    table tr:hover {
+        background-color: #93844e;
+    }
+
+    table tbody td a {
+        display: block;
+        padding: 8px;
+    }
+
+    .pagination {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination ul {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+    }
+
+    .pagination li {
+        margin: 0 5px;
+    }
+
+    .pagination a {
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #0c0202;
+        border: 2px solid #0c0202;
+        border-radius: 5px;
+        background-color: #93844e;
+    }
+
+    .pagination a.active {
+        background-color: #93844e;
+    }
+
+    .file-upload-container {
+        border: 2px solid #f3c706;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .file-upload-container h2 {
+        margin-bottom: 20px;
+        color: #f3c706;
+    }
+
+    .file-upload-container form {
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+
+<body>
+
+<div class="container">
+
+    <div class="btn-group">
+        <a th:href="@{/login}" class="btn btn-success">Sign In</a>
+        <a th:href="@{/registration}" class="btn btn-primary">Sign Up</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/home/addFile}" class="btn btn-add">Add File</a>
+        <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/upload}" class="btn btn-add">Upload</a>
+    </div>
+
+    <h1>Welcome, Alex Hubin! Your padawan greets you!</h1>
+
+    <table>
+        <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Size</td>
+            <td>Type</td>
+            <td>FilePath</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="files : ${fileList}">
+            <td th:text="${files.id}"></td>
+            <td th:text="${files.name}"></td>
+            <td th:text="${files.size}"></td>
+            <td th:text="${files.type}"></td>
+            <td>
+                <!--/*@thymesVar id="filename" type=""*/-->
+                <a th:href="@{/home/download{filename}(filename=${files.name})}" th:text="'Download'"></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${totalPages > 1}" class="pagination">
+        <ul>
+            <li th:each="i : ${#numbers.sequence(1, totalPages)}">
+                <a th:href="@{/home/{pageNumber}(pageNumber=${i})}"
+                   th:text="${i}"
+                   th:classappend="${i == pageNumber} ? 'active'"></a>
+            </li>
+        </ul>
+    </div>
+
+
+</div>
+
+</body>
+</html>
