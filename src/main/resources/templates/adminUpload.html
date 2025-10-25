@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>upload</title>
+    <title>Admin Upload</title>
 </head>
 
 <style>
@@ -11,43 +11,313 @@
         background: linear-gradient(90deg, rgb(12, 2, 2), rgb(245, 76, 2));
         font-family: Arial, sans-serif;
         color: #f3c706;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 50px auto;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        border: 2px solid #f3c706;
+    }
+
+    h1 {
+        text-align: center;
+        color: #f3c706;
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+
+    .admin-badge {
+        display: inline-block;
+        background-color: #ee0808;
+        color: #ffffff;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-left: 10px;
+    }
+
+    /* Стили для flash-сообщений */
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        text-align: center;
+        animation: fadeIn 0.5s;
+    }
+
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.8);
+        border: 2px solid #28a745;
+        color: #ffffff;
+    }
+
+    .alert-error {
+        background-color: rgba(220, 53, 69, 0.8);
+        border: 2px solid #dc3545;
+        color: #ffffff;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .upload-section {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 2px solid #93844e;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
     }
 
     h2 {
-        max-width: 1400px;
-        margin: auto;
-        padding: 0 2rem;
-        overflow: hidden;
+        color: #f3c706;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #93844e;
+        padding-bottom: 10px;
     }
 
-    h3 {
-        max-width: 1400px;
-        margin: auto;
-        padding: 0 2rem;
-        overflow: hidden;
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    label {
+        font-size: 1.1rem;
+        color: #f3c706;
+        font-weight: 500;
+    }
+
+    input[type="file"] {
+        padding: 12px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px solid #f3c706;
+        border-radius: 5px;
+        color: #f3c706;
+        font-size: 1rem;
+    }
+
+    input[type="file"]::file-selector-button {
+        padding: 10px 20px;
+        background-color: #93844e;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background-color: #f3c706;
+        color: #0c0202;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .btn-submit {
+        background-color: #28a745;
+        color: #ffffff;
+        flex: 1;
+    }
+
+    .btn-submit:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .btn-back {
+        background-color: #6c757d;
+        color: #ffffff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 30px;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background-color: #545b62;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .file-info {
+        font-size: 0.9rem;
+        color: #f3c706;
+        opacity: 0.8;
+        margin-top: 5px;
+    }
+
+    .divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #93844e, transparent);
+        margin: 40px 0;
+    }
+
+    .back-button-container {
+        text-align: center;
+        margin-top: 30px;
+    }
 </style>
 
 <body>
 
-<h1>Upload</h1>
+<div class="container">
+    <h1>
+        Admin Upload Panel
+        <span class="admin-badge">ADMIN</span>
+    </h1>
 
-<hr/>
+    <div th:if="${success}" class="alert alert-success">
+        <p th:text="${success}"></p>
+    </div>
 
-<h2>Upload Single File:</h2>
-<form method="POST" enctype="multipart/form-data" th:action="@{upload/file}">
-    <input type="file" name="file"> <br/><br/>
-    <button type="submit">Submit</button>
-</form>
+    <div th:if="${error}" class="alert alert-error">
+        <p th:text="${error}"></p>
+    </div>
 
-<hr/>
-<h3>Upload Multiple Files:</h3>
-<form method="POST" enctype="multipart/form-data" th:action="@{upload/multiple-files}">
-    <input type="file" name="files" multiple> <br/><br/>
-    <button type="submit">Submit</button>
-</form>
-<hr/>
+    <div id="js-error" class="alert alert-error" style="display: none;">
+        <p id="js-error-message"></p>
+    </div>
+
+    <div class="upload-section">
+        <h2>📁 Upload Single File</h2>
+
+        <form method="POST" enctype="multipart/form-data" th:action="@{/upload/file}" onsubmit="return validateFileSize(this, 'single-file')">
+            <div class="form-group">
+                <label for="single-file">Select a file:</label>
+                <input type="file" id="single-file" name="file" required onchange="clearError()">
+                <p class="file-info">Maximum file size: 30MB</p>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-submit">Upload File</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="upload-section">
+        <h2>📂 Upload Multiple Files</h2>
+
+        <form method="POST" enctype="multipart/form-data" th:action="@{/upload/multiple-files}" onsubmit="return validateMultipleFiles(this, 'multiple-files')">
+            <div class="form-group">
+                <label for="multiple-files">Select multiple files:</label>
+                <input type="file" id="multiple-files" name="files" multiple required onchange="clearError()">
+                <p class="file-info">You can select multiple files at once. Maximum 30MB per file.</p>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-submit">Upload Files</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="back-button-container">
+        <a th:href="@{/home}" class="btn-back">← Back to Home</a>
+    </div>
+</div>
+
+<script>
+    const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB in bytes
+
+    function showError(message) {
+        const errorDiv = document.getElementById('js-error');
+        const errorMessage = document.getElementById('js-error-message');
+        errorMessage.textContent = message;
+        errorDiv.style.display = 'block';
+
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function clearError() {
+        document.getElementById('js-error').style.display = 'none';
+    }
+
+    function validateFileSize(form, inputId) {
+        clearError();
+        const input = document.getElementById(inputId);
+        const file = input.files[0];
+
+        if (!file) {
+            showError('Пожалуйста, выберите файл');
+            return false;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            showError(`Файл "${file.name}" слишком большой (${sizeMB}MB)! Максимальный размер: 30MB`);
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateMultipleFiles(form, inputId) {
+        clearError();
+        const input = document.getElementById(inputId);
+        const files = input.files;
+
+        if (files.length === 0) {
+            showError('Пожалуйста, выберите файлы');
+            return false;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            if (files[i].size > MAX_FILE_SIZE) {
+                const sizeMB = (files[i].size / (1024 * 1024)).toFixed(2);
+                showError(`Файл "${files[i].name}" слишком большой (${sizeMB}MB)! Максимальный размер: 30MB`);
+                return false;
+            }
+        }
+
+        return true;
+    }
+</script>
 
 </body>
 </html>

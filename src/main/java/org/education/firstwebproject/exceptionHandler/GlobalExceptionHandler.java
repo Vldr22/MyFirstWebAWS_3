@@ -1,81 +1,55 @@
 package org.education.firstwebproject.exceptionHandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String handleMaxSizeException(MaxUploadSizeExceededException ex,
+                                         RedirectAttributes redirectAttributes) {
 
-    public static class ErrorBody {
+        log.error("File size exceeds maximum limit");
+        redirectAttributes.addFlashAttribute("error",
+                "Файл слишком большой! Максимальный размер: 30MB " + ex.getMessage());
+        return "redirect:/home/addFile";
+    }
 
-        private final String errorName;
-        private final String errorDetails;
+    @ExceptionHandler(FileStorageException.class)
+    public String handleFileStorageException(FileStorageException ex,
+                                             RedirectAttributes redirectAttributes) {
+        log.error("File storage error", ex);
+        redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        return "redirect:/home";
+    }
 
-        public ErrorBody(String errorName, String errorDetails) {
-            this.errorName = errorName;
-            this.errorDetails = errorDetails;
-        }
+    @ExceptionHandler(FileDownloadException.class)
+    public String handleFileDownloadException(FileDownloadException ex,
+                                              RedirectAttributes redirectAttributes) {
+        log.error("File download error", ex);
+        redirectAttributes.addFlashAttribute("error", "Не удалось скачать файл");
+        return "redirect:/home";
+    }
 
-        @ExceptionHandler(Exception.class)
-        public final ResponseEntity<ErrorBody> handleAllExceptions(Exception e) {
-            logger.error("У нас проблема!", e);
-            return new ResponseEntity<>(new ErrorBody
-                    ("common_error", "Internal Server Error"),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleIllegalArgumentException(IllegalArgumentException ex,
+                                                 RedirectAttributes redirectAttributes) {
+        log.error("Invalid argument", ex);
+        redirectAttributes.addFlashAttribute("error", "Некорректный запрос: " + ex.getMessage());
+        return "redirect:/home";
+    }
 
-        }
-
-        @ExceptionHandler(RandomHillelException.class)
-        public final ResponseEntity<ErrorBody> handleRuntimeException(RandomHillelException e) {
-            logger.error("У нас проблема! ", e);
-            return new ResponseEntity<>(new ErrorBody
-                    ("common_error", "RandomHillelException"),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        @ExceptionHandler(BadRequestException.class)
-        public final ResponseEntity<ErrorBody> handleBadRequestException(BadRequestException e) {
-            logger.error("У нас проблема! ", e);
-            return new ResponseEntity<>(new ErrorBody
-                    ("request_error", "incorrect request from the client"),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        @ExceptionHandler(NotFoundException.class)
-        public final ResponseEntity<Object> handleNotFoundException(NotFoundException e) {
-            logger.error("У нас проблема! ", e);
-            return new ResponseEntity<>(new ErrorBody
-                    ("request_error_", "The requested resource was not found"),
-                    HttpStatus.NOT_FOUND);
-        }
-
-        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-        public static class RandomHillelException extends RuntimeException {
-            public RandomHillelException(String message) {
-                super(message);
-            }
-        }
-
-        @ResponseStatus(HttpStatus.BAD_REQUEST)
-        public static class BadRequestException extends RuntimeException {
-            public BadRequestException(String message) {
-                super(message);
-            }
-        }
-
-        @ResponseStatus(HttpStatus.NOT_FOUND)
-        public static class NotFoundException extends RuntimeException {
-            public NotFoundException(String message) {
-                super(message);
-            }
-        }
-
+    @ExceptionHandler(Exception.class)
+    public String handleGeneralException(Exception ex,
+                                         RedirectAttributes redirectAttributes) {
+        log.error("Unexpected error occurred", ex);
+        redirectAttributes.addFlashAttribute("error",
+                "Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.");
+        return "redirect:/home";
     }
 }

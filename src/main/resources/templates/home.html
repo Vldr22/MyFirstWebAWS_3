@@ -29,6 +29,38 @@
         color: #f3c706;
     }
 
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        text-align: center;
+        animation: fadeIn 0.5s;
+    }
+
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.8);
+        border: 2px solid #28a745;
+        color: #ffffff;
+    }
+
+    .alert-error {
+        background-color: rgba(220, 53, 69, 0.8);
+        border: 2px solid #dc3545;
+        color: #ffffff;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .btn-group {
         display: flex;
         justify-content: flex-end;
@@ -41,22 +73,59 @@
         color: #ffffff;
         border-radius: 5px;
         text-align: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
     }
 
     .btn:hover {
-        background-color: #93844e;
+        opacity: 0.9;
     }
 
     .btn-success {
         background-color: #28a745;
     }
 
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
     .btn-primary {
         background-color: #007bff;
     }
 
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
     .btn-add {
         background-color: #93844e;
+    }
+
+    .btn-add:hover {
+        background-color: #7a6f42;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .btn-download {
+        background-color: #007bff;
+        padding: 5px 10px;
+        font-size: 12px;
+        display: inline-block;
+    }
+
+    .btn-download:hover {
+        background-color: #0056b3;
     }
 
     table {
@@ -91,9 +160,16 @@
         background-color: #93844e;
     }
 
-    table tbody td a {
-        display: block;
-        padding: 8px;
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .delete-form {
+        margin: 0;
+        display: inline;
     }
 
     .pagination {
@@ -121,50 +197,51 @@
         background-color: #93844e;
     }
 
+    .pagination a:hover {
+        background-color: #f3c706;
+    }
+
     .pagination a.active {
-        background-color: #93844e;
-    }
-
-    .file-upload-container {
-        border: 2px solid #f3c706;
-        padding: 20px;
-        margin-top: 20px;
-        border-radius: 10px;
-        background-color: rgba(255, 255, 255, 0.08);
-    }
-
-    .file-upload-container h2 {
-        margin-bottom: 20px;
-        color: #f3c706;
-    }
-
-    .file-upload-container form {
-        display: flex;
-        flex-direction: column;
+        background-color: #f3c706;
+        color: #0c0202;
+        font-weight: bold;
     }
 </style>
 
 <body>
 
 <div class="container">
+    <div th:if="${success}" class="alert alert-success">
+        <p th:text="${success}"></p>
+    </div>
+
+    <div th:if="${error}" class="alert alert-error">
+        <p th:text="${error}"></p>
+    </div>
 
     <div class="btn-group">
         <a th:href="@{/login}" class="btn btn-success">Sign In</a>
         <a th:href="@{/registration}" class="btn btn-primary">Sign Up</a>
-        <a sec:authorize="isAuthenticated()" th:href="@{/home/addFile}" class="btn btn-add">Add File</a>
-        <a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/upload}" class="btn btn-add">Upload</a>
+
+        <a sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN') and !hasRole('ROLE_FILE_UPLOADED')"
+           th:href="@{/home/addFile}"
+           class="btn btn-add">Add File</a>
+
+        <a sec:authorize="hasRole('ROLE_ADMIN')"
+           th:href="@{/upload}"
+           class="btn btn-add">Upload</a>
     </div>
 
-    <h1>Welcome, Alex Hubin! Your padawan greets you!</h1>
+    <h1>Welcome!</h1>
 
     <table>
         <thead>
         <tr>
-            <td>Id</td>
-            <td>Name</td>
-            <td>Size</td>
-            <td>Type</td>
-            <td>FilePath</td>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -174,8 +251,18 @@
             <td th:text="${files.size}"></td>
             <td th:text="${files.type}"></td>
             <td>
-                <!--/*@thymesVar id="filename" type=""*/-->
-                <a th:href="@{/home/download{filename}(filename=${files.name})}" th:text="'Download'"></a>
+                <div class="action-buttons">
+                    <a th:href="@{/home/download/{filename}(filename=${files.name})}"
+                       class="btn btn-download">Download</a>
+
+                    <form sec:authorize="hasRole('ROLE_ADMIN')"
+                          th:action="@{/upload/delete/{fileName}(fileName=${files.name})}"
+                          method="post"
+                          class="delete-form"
+                          onsubmit="return confirm('Вы уверены, что хотите удалить этот файл?');">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
             </td>
         </tr>
         </tbody>
@@ -190,8 +277,6 @@
             </li>
         </ul>
     </div>
-
-
 </div>
 
 </body>

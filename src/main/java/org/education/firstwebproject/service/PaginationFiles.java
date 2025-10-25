@@ -1,7 +1,8 @@
-package org.education.firstwebproject.service.filesService;
+package org.education.firstwebproject.service;
 
-import org.education.firstwebproject.dto.File;
-import org.education.firstwebproject.service.filesService.repository.FileRepository;
+import lombok.RequiredArgsConstructor;
+import org.education.firstwebproject.model.File;
+import org.education.firstwebproject.service.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,16 +10,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class PaginationFiles {
 
     private final FileRepository fileDataJPA;
 
     @Value("${pageSize}")
     private int pageSize;
-
-    public PaginationFiles(FileRepository fileDataJPA) {
-        this.fileDataJPA = fileDataJPA;
-    }
 
     public Page<File> findFilesWithPagination(int offset) {
         return fileDataJPA.findAll(PageRequest.of(offset - 1, pageSize).withSort(Sort.by("id")));

@@ -1,10 +1,11 @@
-package org.education.firstwebproject.dto;
+package org.education.firstwebproject.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -32,12 +32,18 @@ build/
 ### VS Code ###
 .vscode/
 
+### Docker ###
+logs/
+docker-compose.override.yml
+
+### Environment variables ###
+.env
+.env.local
+.env.*.local
+
 ### My ignore ###
 .mvn
 *.cmd
-.env
 mvnw.cmd
 mvnw
 Проекты для прокачки веб кодинга.pdf
-
-

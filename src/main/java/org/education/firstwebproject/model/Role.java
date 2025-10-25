@@ -1,12 +1,11 @@
-package org.education.firstwebproject.dto;
+package org.education.firstwebproject.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.util.Set;
-
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -19,13 +18,8 @@ public class Role implements GrantedAuthority {
 
     private String name;
 
-    @Transient
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "roles")
-    private Set<User> users;
-
     @Override
     public String getAuthority() {
-        return getName();
+        return name;
     }
-
 }

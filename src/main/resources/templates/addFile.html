@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>home</title>
+    <title>Add File</title>
 </head>
 
 <style>
@@ -14,21 +13,169 @@
         color: #f3c706;
     }
 
-    .file-upload-container {
-        max-width: 1400px;
-        margin: auto;
-        padding: 0 2rem;
-        overflow: hidden;
+    .container {
+        max-width: 600px;
+        margin: 100px auto;
+        padding: 2rem;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        border: 2px solid #f3c706;
+    }
+
+    h1 {
+        text-align: center;
+        color: #f3c706;
+        margin-bottom: 30px;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        text-align: center;
+        animation: fadeIn 0.5s;
+    }
+
+    .alert-error {
+        background-color: rgba(220, 53, 69, 0.8);
+        border: 2px solid #dc3545;
+        color: #ffffff;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    label {
+        font-size: 1.2rem;
+        color: #f3c706;
+    }
+
+    input[type="file"] {
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 2px solid #f3c706;
+        border-radius: 5px;
+        color: #f3c706;
+    }
+
+    input[type="file"]::file-selector-button {
+        padding: 8px 15px;
+        background-color: #93844e;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background-color: #f3c706;
+        color: #0c0202;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 10px 30px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+
+    .file-info {
+        font-size: 0.9rem;
+        color: #f3c706;
+        opacity: 0.8;
+        margin-top: 5px;
     }
 </style>
+
 <body>
-<div sec:authorize="hasRole('ROLE_USER')" class="file-upload-container">
-    <h2>Hey, you can add only one file less than 30 MB: </h2>
-    <form method="POST" enctype="multipart/form-data" th:action="@{/home/addFile}">
-        <input type="file" name="addFile">
-        <br/><br/>
-        <button type="submit">Submit</button>
+
+<div class="container">
+    <h1>Upload File</h1>
+
+    <div th:if="${error}" class="alert alert-error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:action="@{/home/addFile}" method="post" enctype="multipart/form-data" onsubmit="return validateFile()">
+        <div>
+            <label for="addFile">Select file (max 30MB):</label>
+            <input type="file" id="addFile" name="addFile" required>
+            <p class="file-info">Maximum file size: 30MB</p>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <a th:href="@{/home}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
+
+<script>
+    const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
+
+    function validateFile() {
+        const input = document.getElementById('addFile');
+        const file = input.files[0];
+
+        if (!file) {
+            alert('Пожалуйста, выберите файл');
+            return false;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            alert(`Файл слишком большой (${sizeMB}MB)! Максимальный размер: 30MB`);
+            return false;
+        }
+
+        return true;
+    }
+</script>
+
 </body>
 </html>

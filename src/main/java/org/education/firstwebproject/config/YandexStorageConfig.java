@@ -4,33 +4,30 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import utils.YandexStorageProperties;
 
 @Configuration
+@RequiredArgsConstructor
+@EnableConfigurationProperties({YandexStorageProperties.class})
 public class YandexStorageConfig {
 
-    @Value("${accessKey}")
-    private String accessKey;
-
-    @Value("${secretKey}")
-    private String secretKey;
-
-    @Value("${serviceEndpoint}")
-    private String serviceEndpoint;
-
-    @Value("${storageRegion}")
-    private String storageRegion;
+    private final YandexStorageProperties yandexStorageProperties;
 
     @Bean
-    public AmazonS3 YandexS3Client() {
+    public AmazonS3 yandexS3Client() {
         return AmazonS3ClientBuilder
                 .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(
+                        yandexStorageProperties.getAccessKey(),
+                        yandexStorageProperties.getSecretKey())))
                 .withEndpointConfiguration(
                         new AmazonS3ClientBuilder.EndpointConfiguration(
-                                serviceEndpoint, storageRegion
+                                yandexStorageProperties.getEndpoint(),
+                                yandexStorageProperties.getRegion()
                         )
                 )
                 .build();
