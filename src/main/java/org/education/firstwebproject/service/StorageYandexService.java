@@ -6,12 +6,17 @@ import com.amazonaws.util.IOUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.education.firstwebproject.exceptionHandler.FileDeleteException;
 import org.education.firstwebproject.exceptionHandler.FileDownloadException;
-import org.education.firstwebproject.exceptionHandler.FileStorageException;
+import org.education.firstwebproject.exceptionHandler.FileUploadException;
+import org.education.firstwebproject.exceptionHandler.StorageException;
+import org.education.firstwebproject.model.FileMetadata;
 import org.education.firstwebproject.service.repository.FileRepository;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.education.firstwebproject.utils.Messages;
+import org.education.firstwebproject.utils.YandexStorageProperties;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,35 +24,37 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
-@Service
-@Transactional
-@RequiredArgsConstructor
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class StorageYandexService {
 
     private final FileRepository fileRepository;
     private final AmazonS3 YandexS3Client;
-
-    @Value("${bucketName}")
-    private String bucketName;
+    private final YandexStorageProperties properties;
 
     public void uploadFile(MultipartFile file) {
         File fileObj = null;
         try {
+            String originalFilename = file.getOriginalFilename();
             fileObj = convertMultiPartFileToFile(file);
-            String fileName = file.getOriginalFilename();
-            URL fileUrl = YandexS3Client.getUrl(bucketName, fileName);
 
-            YandexS3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
-            saveFileInfoToDatabase(file, String.valueOf(fileUrl));
+            YandexS3Client.putObject(new PutObjectRequest(
+                    properties.getBucketName(),
+                    originalFilename,
+                    fileObj));
 
-            log.info("File uploaded: {}", fileName);
+            URL fileUrl = YandexS3Client.getUrl(properties.getBucketName(), originalFilename);
+
+            saveFileInfoToDatabase(file, originalFilename, fileUrl.toString());
+
+            log.info("File uploaded: {}", file.getOriginalFilename());
         } catch (AmazonS3Exception e) {
             log.error("S3 error uploading file: {}", file.getOriginalFilename(), e);
-            throw new FileStorageException("Failed to upload file to storage: " + file.getOriginalFilename(), e);
+            throw new StorageException(Messages.FILE_STORAGE_ERROR + file.getOriginalFilename(), e);
         } catch (Exception e) {
             log.error("Error uploading file: {}", file.getOriginalFilename(), e);
-            throw new FileStorageException("Failed to upload file: " + file.getOriginalFilename(), e);
+            throw new FileUploadException(Messages.FILE_UPLOAD_ERROR + file.getOriginalFilename(), e);
         } finally {
             if (fileObj != null && fileObj.exists()) {
                 fileObj.delete();
@@ -57,37 +64,39 @@ public class StorageYandexService {
 
     public byte[] downloadFile(String fileName) {
         try {
-            S3Object s3Object = YandexS3Client.getObject(bucketName, fileName);
+            S3Object s3Object = YandexS3Client.getObject(properties.getBucketName(), fileName);
             S3ObjectInputStream inputStream = s3Object.getObjectContent();
             return IOUtils.toByteArray(inputStream);
         } catch (IOException e) {
             log.error("Error downloading file: {}", fileName, e);
-            throw new FileDownloadException("Failed to download file: " + fileName, e);
+            throw new FileDownloadException(Messages.FILE_DOWNLOAD_ERROR + fileName, e);
         }
     }
 
+    @Transactional
     public void deleteFile(String fileName) {
+
+        FileMetadata fileMetadata = fileRepository.findByName(fileName)
+                .orElseThrow(() -> new NotFoundException("File not found in database: " + fileName));
+        fileRepository.delete(fileMetadata);
+
         try {
-            YandexS3Client.deleteObject(bucketName, fileName);
-
-            fileRepository.findByName(fileName)
-                    .ifPresent(fileRepository::delete);
-
+            YandexS3Client.deleteObject(properties.getBucketName(), fileName);
             log.info("File deleted: {}", fileName);
         } catch (AmazonS3Exception e) {
             log.error("S3 error deleting file: {}", fileName, e);
-            throw new FileStorageException("Failed to delete file from storage: " + fileName, e);
+            throw new StorageException(Messages.FILE_STORAGE_ERROR + fileName, e);
         } catch (Exception e) {
             log.error("Error deleting file: {}", fileName, e);
-            throw new FileStorageException("Failed to delete file: " + fileName, e);
+            throw new FileDeleteException(Messages.FILE_DELETE_ERROR + fileName, e);
         }
     }
 
-    private void saveFileInfoToDatabase(MultipartFile file, String filePath) {
-        org.education.firstwebproject.model.File fileEntity = org.education.firstwebproject.model.File.builder()
-                .name(file.getOriginalFilename())
+    private void saveFileInfoToDatabase(MultipartFile file, String originalFileName, String fileUrl) {
+       FileMetadata fileEntity = FileMetadata.builder()
+                .name(originalFileName)
                 .type(file.getContentType())
-                .filePath(filePath)
+                .filePath(fileUrl)
                 .size(file.getSize())
                 .build();
 
@@ -99,7 +108,8 @@ public class StorageYandexService {
         try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
             fos.write(file.getBytes());
         } catch (IOException e) {
-            throw new FileStorageException("Failed to convert file: " + file.getOriginalFilename(), e);
+            log.error("Error converting file: {}", file.getOriginalFilename(), e);
+            throw new FileUploadException(Messages.FILE_CONVERT_ERROR + file.getOriginalFilename(), e);
         }
         return convertedFile;
     }

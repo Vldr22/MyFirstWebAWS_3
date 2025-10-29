@@ -2,13 +2,15 @@ package org.education.firstwebproject.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.education.firstwebproject.exceptionHandler.FileStorageException;
+import org.education.firstwebproject.exceptionHandler.StorageException;
 import org.education.firstwebproject.model.MultipleUploadResult;
 import org.education.firstwebproject.service.FileService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.education.firstwebproject.utils.FlashAttributes;
+import org.education.firstwebproject.utils.Messages;
 
 @Controller
 @RequestMapping("/upload")
@@ -28,17 +30,18 @@ public class AdminController {
                                    RedirectAttributes redirectAttributes) {
 
         if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Пожалуйста, выберите файл");
+            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, Messages.FILE_NOT_SELECTED);
             return "redirect:/upload";
         }
 
         try {
-            String message = fileUploadService.uploadSingleFile(file);
-            redirectAttributes.addFlashAttribute("success", message);
+            fileUploadService.uploadSingleFile(file);
+            redirectAttributes.addFlashAttribute(FlashAttributes.SUCCESS,
+                    String.format(Messages.FILE_UPLOAD_SUCCESS, file.getOriginalFilename()));
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Не удалось загрузить файл");
+            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, Messages.FILE_UPLOAD_ERROR);
         }
         return "redirect:/upload";
     }
@@ -48,22 +51,28 @@ public class AdminController {
                                       RedirectAttributes redirectAttributes) {
 
         if (files == null || files.length == 0) {
-            redirectAttributes.addFlashAttribute("error", "Пожалуйста, выберите файлы");
+            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, Messages.FILES_NOT_SELECTED);
             return "redirect:/upload";
         }
 
         MultipleUploadResult result = fileUploadService.uploadMultipleFiles(files);
 
         if (result.hasSuccesses() && !result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("success",
-                    "Успешно загружено файлов: " + result.successCount());
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.SUCCESS,
+                    String.format(Messages.FILES_UPLOAD_SUCCESS, result.successCount()));
         } else if (result.hasSuccesses()) {
-            redirectAttributes.addFlashAttribute("success",
-                    "Успешно загружено: " + result.successCount() + ", не удалось: " + result.failCount());
-            redirectAttributes.addFlashAttribute("error", result.getErrorMessage());
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.SUCCESS,
+                    String.format(Messages.FILES_UPLOAD_PARTIAL,
+                            result.successCount(), result.failCount()));
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.ERROR,
+                    String.format(Messages.FILES_UPLOAD_FAILED, result.getErrorMessage()));
         } else {
-            redirectAttributes.addFlashAttribute("error",
-                    "Не удалось загрузить файлы. " + result.getErrorMessage());
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.ERROR,
+                    Messages.FILES_UPLOAD_FAILED + result.getErrorMessage());
         }
 
         return "redirect:/upload";
@@ -74,15 +83,18 @@ public class AdminController {
                              RedirectAttributes redirectAttributes) {
         try {
             fileUploadService.deleteFile(fileName);
-            redirectAttributes.addFlashAttribute("success",
-                    "Файл успешно удален: " + fileName);
-        } catch (FileStorageException e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Не удалось удалить файл: " + e.getMessage());
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.SUCCESS,
+                    String.format(Messages.FILE_DELETE_SUCCESS, fileName));
+        } catch (StorageException e) {
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.ERROR,
+                    String.format(Messages.FILE_DELETE_ERROR, fileName));
         } catch (Exception e) {
             log.error("Unexpected error deleting file: {}", fileName, e);
-            redirectAttributes.addFlashAttribute("error",
-                    "Произошла ошибка при удалении файла");
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.ERROR,
+                    String.format(Messages.FILE_DELETE_ERROR, fileName));
         }
         return "redirect:/upload";
     }

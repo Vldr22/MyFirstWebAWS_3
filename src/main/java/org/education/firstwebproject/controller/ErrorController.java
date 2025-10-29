@@ -3,6 +3,7 @@ package org.education.firstwebproject.controller;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.education.firstwebproject.utils.FlashAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,19 +27,18 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
                 log.error("Exception: ", (Throwable) exception);
             }
 
-            model.addAttribute("errorCode", statusCode);
+            model.addAttribute(FlashAttributes.ERROR, statusCode);
 
             if (statusCode == HttpStatus.NOT_FOUND.value()) {
-                model.addAttribute("errorMessage", "Page not found");
+                model.addAttribute(FlashAttributes.ERROR, "Page not found");
             } else if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
-                model.addAttribute("errorMessage", "An unexpected error occurred");
+                model.addAttribute(FlashAttributes.ERROR, "An unexpected error occurred");
             } else if (statusCode == HttpStatus.FORBIDDEN.value()) {
-                model.addAttribute("errorMessage", "Access denied");
+                model.addAttribute(FlashAttributes.ERROR, "Access denied");
             } else {
-                model.addAttribute("errorMessage", "An error occurred");
+                model.addAttribute(FlashAttributes.ERROR, "An error occurred");
             }
         }
-
         return "error";
     }
 }

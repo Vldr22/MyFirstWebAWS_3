@@ -1,4 +1,4 @@
-package utils;
+package org.education.firstwebproject.utils;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -25,14 +25,18 @@ public class YandexStorageProperties {
     @NotBlank(message = "Region is required")
     private final String region;
 
+    @NotBlank(message = "BucketName is required")
+    private final String bucketName;
+
     @ConstructorBinding
     public YandexStorageProperties(String accessKey,
-                             String secretKey,
-                             String endpoint,
-                             String region) {
+                                   String secretKey,
+                                   String endpoint,
+                                   String region, String bucketName) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.endpoint = endpoint;
         this.region = region;
+        this.bucketName = bucketName;
     }
 }

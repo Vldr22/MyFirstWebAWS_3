@@ -22,5 +22,5 @@ CREATE TABLE IF NOT EXISTS files (
                                      name VARCHAR(1024),
                                      type VARCHAR(1024),
                                      size BIGINT,
-                                     file_path VARCHAR(255) UNIQUE
+                                     file_path VARCHAR(2048) UNIQUE
 );

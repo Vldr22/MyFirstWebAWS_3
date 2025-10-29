@@ -1,4 +1,4 @@
-package utils;
+package org.education.firstwebproject.utils;
 
 public class AppConstants {
 

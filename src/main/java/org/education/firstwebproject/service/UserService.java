@@ -16,15 +16,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.education.firstwebproject.utils.Messages;
 
 import javax.management.relation.RoleNotFoundException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
-@Slf4j
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
@@ -37,7 +38,7 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            throw new UsernameNotFoundException(String.format(Messages.USER_NOT_FOUND, username));
         }
         return user;
     }
@@ -78,14 +79,14 @@ public class UserService implements UserDetailsService {
                 .anyMatch(role -> role.getName().equals(roleName));
     }
 
-    public void saveAdmin(User user) {
+    public void saveAdmin(User user) throws RoleNotFoundException {
 
         if (userRepository.findByUsername(user.getUsername()) != null) {
             throw new UserAlreadyExistsException(user.getUsername());
         }
 
-        Optional<Role> adminRole = roleRepository.findByName("ADMIN");
-        user.setRoles(Collections.singleton(adminRole.orElseThrow(() -> new RoleUpdateException(user.getUsername()))));
+        Role adminRole = findRoleByName(UserRole.ROLE_ADMIN);
+        user.setRoles(Collections.singleton(adminRole));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         userRepository.save(user);
@@ -102,6 +103,6 @@ public class UserService implements UserDetailsService {
 
     private Role findRoleByName(UserRole userRole) throws RoleNotFoundException {
         return roleRepository.findByName(userRole.getAuthority())
-                .orElseThrow(() -> new RoleNotFoundException("Role not found: " + userRole));
+                .orElseThrow(() -> new RoleNotFoundException(String.format(Messages.ROLE_NOT_FOUND, userRole)));
     }
 }

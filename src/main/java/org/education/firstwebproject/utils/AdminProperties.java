@@ -1,4 +1,4 @@
-package utils;
+package org.education.firstwebproject.utils;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

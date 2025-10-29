@@ -5,12 +5,11 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Table(name = "files")
-public class File {
+public class FileMetadata {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +24,7 @@ public class File {
     @Column()
     private long size;
 
-    @Column(name = "filePath", unique = true)
+    @Column(unique = true, length = 2048)
     private String filePath;
 
 }

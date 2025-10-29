@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.education.firstwebproject.exceptionHandler.UserAlreadyExistsException;
 import org.education.firstwebproject.model.User;
 import org.education.firstwebproject.service.UserService;
+import org.education.firstwebproject.utils.FlashAttributes;
+import org.education.firstwebproject.utils.Messages;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,21 +46,21 @@ public class AuthController {
             User user = new User(userForm.getUsername(), userForm.getPassword());
             userService.registerUser(user);
 
-            log.info("User registered successfully: {}", user.getUsername());
-            redirectAttributes.addFlashAttribute("success",
-                    "Регистрация прошла успешно! Теперь вы можете войти.");
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.SUCCESS,
+                    Messages.REGISTRATION_SUCCESS);
             return "redirect:/login";
 
         } catch (UserAlreadyExistsException e) {
             log.warn("Registration failed - user already exists: {}", userForm.getUsername());
-            redirectAttributes.addFlashAttribute("error",
-                    "Пользователь с таким именем уже существует!");
+            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, Messages.USER_ALREADY_EXISTS);
             return "redirect:/registration";
 
         } catch (Exception e) {
             log.error("Unexpected error during registration: {}", userForm.getUsername(), e);
-            redirectAttributes.addFlashAttribute("error",
-                    "Произошла ошибка при регистрации. Попробуйте позже.");
+            redirectAttributes.addFlashAttribute(
+                    FlashAttributes.ERROR,
+                    Messages.REGISTER_UNEXPECTED_ERROR);
             return "redirect:/registration";
         }
     }

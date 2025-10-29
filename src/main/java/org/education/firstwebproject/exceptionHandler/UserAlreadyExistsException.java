@@ -1,11 +1,9 @@
 package org.education.firstwebproject.exceptionHandler;
 
+import org.education.firstwebproject.utils.Messages;
+
 public class UserAlreadyExistsException extends RuntimeException {
     public UserAlreadyExistsException(String username) {
-        super("User already exists: " + username);
-    }
-
-    public UserAlreadyExistsException(String username, Throwable cause) {
-        super("User already exists: " + username, cause);
+        super(String.format(Messages.USER_ALREADY_EXISTS, username));
     }
 }

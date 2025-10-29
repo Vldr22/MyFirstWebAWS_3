@@ -1,7 +1,7 @@
 package org.education.firstwebproject.service;
 
 import lombok.RequiredArgsConstructor;
-import org.education.firstwebproject.model.File;
+import org.education.firstwebproject.model.FileMetadata;
 import org.education.firstwebproject.service.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -18,7 +18,7 @@ public class PaginationFiles {
     @Value("${pageSize}")
     private int pageSize;
 
-    public Page<File> findFilesWithPagination(int offset) {
+    public Page<FileMetadata> findFilesWithPagination(int offset) {
         return fileDataJPA.findAll(PageRequest.of(offset - 1, pageSize).withSort(Sort.by("id")));
     }
 

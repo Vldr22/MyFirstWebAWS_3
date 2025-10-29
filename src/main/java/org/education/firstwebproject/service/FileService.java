@@ -2,14 +2,21 @@ package org.education.firstwebproject.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.education.firstwebproject.exceptionHandler.FileStorageException;
+import org.education.firstwebproject.exceptionHandler.FileEmptyException;
+import org.education.firstwebproject.exceptionHandler.FileSizeExceededException;
+import org.education.firstwebproject.exceptionHandler.FileUploadException;
+import org.education.firstwebproject.model.FileMetadata;
 import org.education.firstwebproject.model.MultipleUploadResult;
+import org.education.firstwebproject.service.repository.FileRepository;
+import org.education.firstwebproject.utils.Messages;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import utils.AppConstants;
+import org.education.firstwebproject.utils.AppConstants;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -17,18 +24,16 @@ import java.util.List;
 public class FileService {
 
     private final StorageYandexService storageYandexService;
+    private final FileRepository fileRepository;
 
-    public String uploadSingleFile(MultipartFile file) {
+    public void uploadSingleFile(MultipartFile file) {
         validateFile(file);
         storageYandexService.uploadFile(file);
-        return "Файл '" + file.getOriginalFilename() + "' успешно загружен!";
     }
 
     public MultipleUploadResult uploadMultipleFiles(MultipartFile[] files) {
-        log.info("Uploading {} files", files.length);
-
         int successCount = 0;
-        List<String> errors = new ArrayList<>();
+        List<String> failedFiles = new ArrayList<>();
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) {
@@ -39,18 +44,18 @@ public class FileService {
                 validateFile(file);
                 storageYandexService.uploadFile(file);
                 successCount++;
-            } catch (IllegalArgumentException e) {
-                errors.add("Файл '" + file.getOriginalFilename() + "': " + e.getMessage());
-            } catch (FileStorageException e) {
-                errors.add("Файл '" + file.getOriginalFilename() + "': ошибка загрузки");
-                log.error("Failed to upload: {}", file.getOriginalFilename());
+            } catch (FileEmptyException | FileSizeExceededException e) {
+                failedFiles.add(file.getOriginalFilename());
+            } catch (FileUploadException e) {
+                failedFiles.add(file.getOriginalFilename());
+                log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
             } catch (Exception e) {
-                errors.add("Файл '" + file.getOriginalFilename() + "': неожиданная ошибка");
-                log.error("Unexpected error: {}", file.getOriginalFilename());
+                failedFiles.add(file.getOriginalFilename());
+                log.error("Unexpected error uploading file: {}", file.getOriginalFilename(), e);
             }
         }
 
-        return new MultipleUploadResult(successCount, errors);
+        return new MultipleUploadResult(successCount,failedFiles);
     }
 
     public void deleteFile(String fileName) {
@@ -59,11 +64,15 @@ public class FileService {
 
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("Файл пустой");
+            throw new FileEmptyException();
         }
         if (file.getSize() > AppConstants.MAX_FILE_SIZE_BYTES) {
-            throw new IllegalArgumentException(
-                    "Размер файла превышает " + AppConstants.MAX_FILE_SIZE_MB + "MB");
+            throw new FileSizeExceededException();
+        }
+
+        Optional<FileMetadata> optionalFileMetadata = fileRepository.findByName(file.getOriginalFilename());
+        if (optionalFileMetadata.isPresent()) {
+            throw new FileUploadException(Messages.FILE_ALREADY_BEEN_UPLOADED);
         }
     }
 

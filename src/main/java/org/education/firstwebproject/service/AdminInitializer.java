@@ -1,24 +1,25 @@
-package utils;
+package org.education.firstwebproject.service;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.education.firstwebproject.model.User;
-import org.education.firstwebproject.service.UserService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.education.firstwebproject.utils.AdminProperties;
 
+import javax.management.relation.RoleNotFoundException;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties({AdminProperties.class})
-public class CreatorAdmin {
+public class AdminInitializer {
 
     private final UserService userService;
     private final AdminProperties adminProperties;
 
     @PostConstruct
-    public void init() {
+    public void init() throws RoleNotFoundException {
         boolean flag = false;
         List<User> list = userService.findAllUsers();
 

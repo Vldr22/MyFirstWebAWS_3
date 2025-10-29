@@ -1,5 +1,8 @@
 package org.education.firstwebproject.model;
 
+import lombok.Getter;
+
+@Getter
 public enum UserRole {
 
     ROLE_USER("ROLE_USER"),
@@ -10,10 +13,6 @@ public enum UserRole {
 
     UserRole(String authority) {
         this.authority = authority;
-    }
-
-    public String getAuthority() {
-        return authority;
     }
 
     public String getRoleName() {
