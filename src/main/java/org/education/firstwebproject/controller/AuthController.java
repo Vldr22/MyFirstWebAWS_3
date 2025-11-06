@@ -1,67 +1,41 @@
 package org.education.firstwebproject.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.education.firstwebproject.exceptionHandler.UserAlreadyExistsException;
-import org.education.firstwebproject.model.User;
-import org.education.firstwebproject.service.UserService;
-import org.education.firstwebproject.utils.FlashAttributes;
-import org.education.firstwebproject.utils.Messages;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.education.firstwebproject.model.CommonResponse;
+import org.education.firstwebproject.model.request.AuthRequest;
+import org.education.firstwebproject.model.response.LoginResponse;
+import org.education.firstwebproject.service.auth.AuthService;
+import org.education.firstwebproject.exception.messages.Messages;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
-@Controller
-@RequiredArgsConstructor
 @Slf4j
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthService authService;
 
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login";
+    @PostMapping("/login")
+    public CommonResponse<LoginResponse> login(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
+        LoginResponse loginResponse = authService.login(request, response);
+        return CommonResponse.success(loginResponse);
     }
 
-    @GetMapping("/registration")
-    public String registrationPage(Model model) {
-        model.addAttribute("userForm", new User());
-        return "registration";
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommonResponse<String> register(@Valid @RequestBody AuthRequest request) {
+        authService.register(request);
+        return CommonResponse.success(Messages.REGISTRATION_SUCCESS);
     }
 
-    @PostMapping("/registration")
-    public String registerUser(@ModelAttribute("userForm") @Valid User userForm,
-                               BindingResult bindingResult,
-                               RedirectAttributes redirectAttributes) {
-
-        if (bindingResult.hasErrors()) {
-            return "registration";
-        }
-
-        try {
-            User user = new User(userForm.getUsername(), userForm.getPassword());
-            userService.registerUser(user);
-
-            redirectAttributes.addFlashAttribute(
-                    FlashAttributes.SUCCESS,
-                    Messages.REGISTRATION_SUCCESS);
-            return "redirect:/login";
-
-        } catch (UserAlreadyExistsException e) {
-            log.warn("Registration failed - user already exists: {}", userForm.getUsername());
-            redirectAttributes.addFlashAttribute(FlashAttributes.ERROR, Messages.USER_ALREADY_EXISTS);
-            return "redirect:/registration";
-
-        } catch (Exception e) {
-            log.error("Unexpected error during registration: {}", userForm.getUsername(), e);
-            redirectAttributes.addFlashAttribute(
-                    FlashAttributes.ERROR,
-                    Messages.REGISTER_UNEXPECTED_ERROR);
-            return "redirect:/registration";
-        }
+    @PostMapping("/logout")
+    public CommonResponse<String> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return CommonResponse.success(Messages.LOGOUT_SUCCESS);
     }
 }
