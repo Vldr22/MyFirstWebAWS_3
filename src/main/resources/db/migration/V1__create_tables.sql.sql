@@ -19,8 +19,9 @@ CREATE TABLE IF NOT EXISTS users_roles (
 
 CREATE TABLE IF NOT EXISTS files (
                                      id BIGSERIAL PRIMARY KEY,
-                                     name VARCHAR(1024),
-                                     type VARCHAR(1024),
-                                     size BIGINT,
-                                     file_path VARCHAR(2048) UNIQUE
+                                     unique_name VARCHAR(64) NOT NULL UNIQUE,
+                                     original_name VARCHAR(1024) NOT NULL,
+                                     type VARCHAR(255),
+                                     size BIGINT NOT NULL,
+                                     file_hash VARCHAR(64) NOT NULL UNIQUE
 );
