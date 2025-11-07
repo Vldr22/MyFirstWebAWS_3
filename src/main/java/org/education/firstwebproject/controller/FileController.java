@@ -7,12 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.education.firstwebproject.model.CommonResponse;
 
+import org.education.firstwebproject.model.response.FileDownloadResponse;
 import org.education.firstwebproject.model.response.LoginResponse;
 import org.education.firstwebproject.model.response.MultipleUploadResponse;
 import org.education.firstwebproject.service.file.FileManagementService;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.education.firstwebproject.exception.messages.Messages;
@@ -56,21 +56,22 @@ public class FileController {
             @RequestParam
             @NotBlank(message = FILENAME_MUST_BE_NOT_EMPTY)
             String fileName) {
-        byte[] data = fileManagementService.downloadFile(fileName);
 
-        ByteArrayResource resource = new ByteArrayResource(data);
+        FileDownloadResponse response = fileManagementService.prepareFileDownload(fileName);
+        ByteArrayResource resource = new ByteArrayResource(response.getContent());
+
         return ResponseEntity
                 .ok()
-                .contentLength(data.length)
-                .header("Content-Type", "application/octet-stream")
-                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .contentLength(response.getSize())
+                .header("Content-Type", response.getContentType())
+                .header("Content-Disposition", "attachment; filename*=UTF-8''" + response.getFileName())
                 .body(resource);
     }
 
-    @DeleteMapping("/delete/{fileName}")
+    @DeleteMapping("/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public CommonResponse<String> delete(
-            @PathVariable
+            @RequestParam
             @NotBlank(message = FILENAME_MUST_BE_NOT_EMPTY)
             String fileName) {
         fileManagementService.deleteFile(fileName);
