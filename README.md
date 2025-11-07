@@ -1,135 +1,58 @@
-# FirstWebProject
+# S3FileManager
 
-Educational web application demonstrating commercial Spring Boot development practices with modern tech stack and production-ready configuration.
+REST API для управления файлами в Yandex Object Storage (S3) с публичным доступом к чтению и ролевым контролем загрузки. Реализованы коммерческие практики: JWT + Redis для аутентификации, Docker с multi-profile конфигурацией, Flyway migrations, Swagger документация.
 
-## 🛠 Tech Stack
+## Tech Stack
 
-**Backend:**
-- Java 17
-- Spring Boot 3.3.5 (Web, Security, Data JPA, Validation)
-- PostgreSQL 15 + Flyway migrations
-- Redis (JWT token storage)
-- Yandex Object Storage (S3-compatible)
+- **Backend:** Java 17, Spring Boot 3.3.5 (Web, Security, Data JPA, Validation)
+- **Database:** PostgreSQL 15 + Flyway migrations
+- **Cache & Sessions:** Redis (JWT token whitelist)
+- **Storage:** Yandex Object Storage (S3-compatible)
+- **Infrastructure:** Docker, Docker Compose
+- **Monitoring:** Spring Boot Actuator
+- **Documentation:** Swagger/OpenAPI 3.0
 
-**Infrastructure:**
-- Docker & Docker Compose
-- ELK Stack (Elasticsearch, Logstash, Kibana) for centralized logging
-- Spring Boot Actuator for monitoring
+## Key Features
 
-**Security & API:**
-- JWT authentication with HttpOnly cookies
-- Role-based access control (ADMIN, USER)
-- Swagger/OpenAPI 3.0 documentation
+- **Public access:** Просмотр и скачивание файлов без регистрации
+- **Role-based upload:** USER загружает 1 файл, ADMIN - неограниченно с правом удаления
+- **JWT authentication:** HttpOnly cookies + Redis whitelist для токенов
+- **Duplicate prevention:** SHA-256 хеширование предотвращает дубликаты файлов
+- **Multi-profile config:** Отдельные настройки для dev/prod окружений
+- **API pagination:** Постраничный вывод списка файлов
 
-## ✨ Key Features
+## Quick Start
 
-- 🔐 JWT-based authentication with Redis whitelist
-- 📁 Secure file upload/download with Yandex Object Storage
-- 📊 Pagination and filtering for API endpoints
-- 🔄 Database versioning with Flyway
-- 🐳 Multi-profile configuration (dev/prod)
-- 📝 Structured JSON logging for ELK Stack
-- 🔍 Health checks and monitoring endpoints
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Java 17+
-- Docker & Docker Compose
-- `.env` file with required variables (see below)
-
-### Run with Docker
+### With Docker (рекомендуется)
 
 ```bash
-# Clone and navigate to project
-git clone <repository-url>
-cd FirstWebProject
-
-# Create .env file with your credentials
+# Создайте .env файл с переменными (см. ниже)
 cp .env.example .env
 
-# Start all services
+# Запустите все сервисы
 docker-compose up -d
 
-# Application will be available at http://localhost:8080
+# Приложение доступно на http://localhost:8080
 ```
+## Environment Variables
 
-### Run locally (development)
+| Variable            | Description                    | Example           |
+|---------------------|--------------------------------|-------------------|
+| `POSTGRES_DB`       | Database name                  | `s3filemanager`   |
+| `POSTGRES_USER`     | Database user                  | `dbuser`          |
+| `POSTGRES_PASSWORD` | Database password              | `securepass`      |
+| `JWT_SECRET_KEY`    | JWT signing key (min 256 bits) | `your-secret-key` |
+| `ACCESS_KEY`        | Yandex Storage access key      | `YCAxxxxx`        |
+| `SECRET_KEY`        | Yandex Storage secret key      | `YCMxxxxx`        |
+| `ADMIN_NAME`        | Default admin username         | `admin`           |
+| `ADMIN_PASSWORD`    | Default admin password         | `admin123`        |
 
-```bash
-# Start PostgreSQL and Redis
-docker-compose up -d postgres redis
+## API Documentation
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
 
-# Run application with dev profile
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-```
+## User Roles
 
-## 🔐 Environment Variables
-
-Create `.env` file in project root:
-
-```env
-# Database
-POSTGRES_DB=firstWebProject
-POSTGRES_USER=your_user
-POSTGRES_PASSWORD=your_password
-
-# Redis
-SPRING_DATA_REDIS_HOST=localhost
-SPRING_DATA_REDIS_PORT=6379
-
-# JWT
-JWT_SECRET_KEY=your_secret_key_min_256_bits
-
-# Admin credentials
-ADMIN_NAME=admin
-ADMIN_PASSWORD=admin_password
-
-# Yandex Object Storage
-ACCESS_KEY=your_yandex_access_key
-SECRET_KEY=your_yandex_secret_key
-```
-
-## 📚 API Documentation
-
-Swagger UI available at: `http://localhost:8080/swagger-ui.html`
-
-API docs (OpenAPI 3.0): `http://localhost:8080/v3/api-docs`
-
-## 🏗 Project Structure
-
-```
-src/main/
-├── java/
-│   └── org/education/firstwebproject/
-│       ├── config/          # Configuration classes
-│       ├── controller/      # REST controllers
-│       ├── dto/             # Data Transfer Objects
-│       ├── entity/          # JPA entities
-│       ├── exception/       # Exception handling
-│       ├── repository/      # Spring Data repositories
-│       ├── security/        # Security filters & configs
-│       └── service/         # Business logic
-└── resources/
-    ├── db/migration/        # Flyway SQL migrations
-    ├── application.yml      # Base configuration
-    ├── application-dev.yml  # Development profile
-    └── application-prod.yml # Production profile
-```
-
-## 🔧 Configuration Profiles
-
-- **dev** - Local development (verbose logging, show SQL)
-- **prod** - Production (minimal logging, optimized for Docker)
-
-Activate profile: `SPRING_PROFILES_ACTIVE=dev`
-
-## 🏥 Health & Monitoring
-
-- Health: `http://localhost:8080/actuator/health`
-- Metrics: `http://localhost:8080/actuator/metrics`
-- Info: `http://localhost:8080/actuator/info`
-
-## 📝 License
-
-Educational project for portfolio purposes.
+- **Anonymous:** Просмотр и скачивание файлов
+- **ROLE_USER:** Загрузка 1 файла (после загрузки → ROLE_USER_ADDED)
+- **ROLE_USER_ADDED:** Просмотр и скачивание (загрузка заблокирована)
+- **ROLE_ADMIN:** Полный доступ (загрузка множества файлов, удаление)
