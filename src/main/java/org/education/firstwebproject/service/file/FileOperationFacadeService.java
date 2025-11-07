@@ -38,12 +38,14 @@ public class FileOperationFacadeService {
 
         try {
             byte[] bytes = file.getBytes();
+
             String fileHash = fileHashService.calculateMD5(bytes);
             fileHashService.checkDuplicateInDatabase(fileHash);
 
             fileStorageService.uploadFileYandexS3(uniqueFileName, bytes, file.getContentType());
 
             try {
+
                 fileMetadataService.saveDatabaseMetadata(file, uniqueFileName, fileHash);
                 log.info("File uploaded successfully: {}", uniqueFileName);
             } catch (Exception dbEx) {

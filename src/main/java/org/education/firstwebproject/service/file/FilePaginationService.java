@@ -21,7 +21,7 @@ public class FilePaginationService {
     public Page<FileResponse> paginationFiles(Pageable pageable) {
         Page<FileMetadata> filesPage = fileMetadataRepository.findAll(pageable);
         return filesPage.map(file -> FileResponse.builder()
-                .fileName(file.getUniqueName())
+                .fileName(file.getOriginalName())
                 .fileSize(convertToMB(file.getSize()) + MB_SUFFIX)
                 .build());
     }
