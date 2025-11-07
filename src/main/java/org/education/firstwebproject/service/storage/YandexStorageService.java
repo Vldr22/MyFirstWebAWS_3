@@ -27,29 +27,29 @@ public class YandexStorageService {
     private final AmazonS3 yandexS3Client;
     private final YandexStorageProperties properties;
 
-    public String uploadFileYandexS3(String uniqueFileName, byte[] bytes, String contentType) {
+    public void uploadFileYandexS3(String uniqueFileName, byte[] bytes, String contentType) {
         ObjectMetadata metadata = createObjectMetadata(bytes, contentType);
 
         try (InputStream is = new ByteArrayInputStream(bytes)) {
             PutObjectRequest request = new PutObjectRequest(properties.getBucketName(), uniqueFileName, is, metadata);
             yandexS3Client.putObject(request);
+            log.info("File uploaded: {}, bytes: {}", uniqueFileName, bytes.length);
         } catch (IOException e) {
-            throw new StorageException(String.format(Messages.FILE_STORAGE_ERROR, uniqueFileName), e);
+            throw new StorageException(Messages.FILE_STORAGE_ERROR, e);
         }
-
-        return yandexS3Client.getUrl(properties.getBucketName(), uniqueFileName).toString();
     }
 
-    public byte[] downloadFileYandexS3(String fileName) {
-        try (S3Object s3Object = yandexS3Client.getObject(properties.getBucketName(), fileName);
+    public byte[] downloadFileYandexS3(String uniqueFileName) {
+        try (S3Object s3Object = yandexS3Client.getObject(properties.getBucketName(), uniqueFileName);
              S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
-            return IOUtils.toByteArray(inputStream);
+            byte[] data = IOUtils.toByteArray(inputStream);
+            return data;
         } catch (AmazonS3Exception e) {
-            log.error("File not found in S3: {}", fileName);
-            throw new StorageException(String.format(Messages.FILE_STORAGE_ERROR, fileName), e);
+            log.error("File not found in S3: {}", uniqueFileName);
+            throw new StorageException(Messages.FILE_STORAGE_ERROR, e);
         } catch (IOException e) {
-            log.error("Error downloading file: {}", fileName, e);
-            throw new FileDownloadException(String.format(Messages.FILE_DOWNLOAD_ERROR, fileName), e);
+            log.error("Error downloading file: {}", uniqueFileName, e);
+            throw new FileDownloadException(String.format(Messages.FILE_DOWNLOAD_ERROR, uniqueFileName), e);
         }
     }
 
@@ -59,7 +59,7 @@ public class YandexStorageService {
             log.info("File deleted from S3: {}", fileName);
         } catch (AmazonS3Exception e) {
             log.error("S3 error deleting file: {}", fileName, e);
-            throw new StorageException(String.format(Messages.FILE_STORAGE_ERROR, fileName), e);
+            throw new StorageException(Messages.FILE_STORAGE_ERROR, e);
         } catch (Exception e) {
             log.error("Unexpected error deleting file: {}", fileName, e);
             throw new FileDeleteException(String.format(Messages.FILE_DELETE_ERROR, fileName), e);

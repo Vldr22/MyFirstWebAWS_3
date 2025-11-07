@@ -21,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
  */
 @Getter
 @Validated
-@ConfigurationProperties(prefix = "spring.data.web.pageable")
+@ConfigurationProperties(prefix = "app.pageable")
 public class PageableProperties {
 
     @Min(value = 1, message = "Default page size must be at least 1")

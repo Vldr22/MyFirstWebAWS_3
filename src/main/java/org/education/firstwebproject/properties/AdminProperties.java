@@ -21,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
 @Getter
 @Validated
 @RequiredArgsConstructor
-@ConfigurationProperties(prefix = "admin")
+@ConfigurationProperties(prefix = "app.admin")
 public class AdminProperties {
 
     @NotBlank(message = "Admin name is required")

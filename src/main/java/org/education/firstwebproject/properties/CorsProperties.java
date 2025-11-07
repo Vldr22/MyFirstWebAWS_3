@@ -27,7 +27,7 @@ import java.util.List;
 @Getter
 @Validated
 @RequiredArgsConstructor
-@ConfigurationProperties(prefix = "cors")
+@ConfigurationProperties(prefix = "app.cors")
 public class CorsProperties {
 
     @NotEmpty(message = "At least one allowed origin is required")

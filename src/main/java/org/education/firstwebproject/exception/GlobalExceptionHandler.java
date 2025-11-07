@@ -2,6 +2,7 @@ package org.education.firstwebproject.exception;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.util.stream.Collectors;
 
 /**
  * Глобальный обработчик исключений для всех контроллеров.
@@ -135,8 +134,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CommonResponse<Void> handleConstraintViolation(ConstraintViolationException ex) {
-        log.warn("Constraint violation: {}", ex.getMessage());
-        return createErrorResponse(HttpStatus.BAD_REQUEST, "Validation Error", ex.getMessage());
+        log.warn("Constraint violation");
+
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Validation failed");
+
+        return createErrorResponse(HttpStatus.BAD_REQUEST, "Validation Error", message);
     }
 
     // ========== HTTP REQUEST ==========
@@ -256,7 +262,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CommonResponse<Void> handleGeneralException(Exception ex) {
         log.error("Unexpected exception", ex);
-        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", Messages.UNEXPECTED_ERROR);
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An error occurred. Please try again later");
     }
 
     // ========== HELPER METHOD ==========

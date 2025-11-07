@@ -26,10 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
                 new PageableHandlerMethodArgumentResolver();
 
         resolver.setFallbackPageable(PageRequest.of(0, pageableProperties.getDefaultPageSize()));
-        resolver.setMaxPageSize(pageableProperties.getDefaultPageSize());
+        resolver.setMaxPageSize(pageableProperties.getMaxPageSize());
 
         resolvers.add(resolver);
-
-
     }
 }
