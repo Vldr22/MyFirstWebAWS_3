@@ -28,7 +28,8 @@ public class Messages {
     public static final String FILE_ALREADY_BEEN_UPLOADED = "File already been uploaded";
     public static final String INABILITY_UPLOAD_MORE_THAN_ONE_FILE =
             "You have already uploaded a file. According to our service rules, one authorized user can only upload 1 file.";
-    public static final String FILES_UPLOAD_ERROR = "Failed to upload files";
+    public static final String FILES_UPLOAD_ERROR = "Failed to upload all added files";
+
 
     /**
      * Сообщения связанные с удалением файлов
@@ -39,7 +40,7 @@ public class Messages {
     /**
      * Сообщения связанные с операциями S3 хранилища
      */
-    public static final String FILE_STORAGE_ERROR = "Unable to process the file with uniqueFileName '%s' operation in the storage";
+    public static final String FILE_STORAGE_ERROR = "Unable to process the file operation in the storage";
     public static final String FILE_DOWNLOAD_ERROR = "Failed to download file with name '%s'";
 
     public static final String UNEXPECTED_ERROR = "An unexpected error occurred. Please try again later.";
