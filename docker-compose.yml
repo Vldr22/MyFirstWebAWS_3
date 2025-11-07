@@ -21,9 +21,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: firstwebproject-redis
-    environment:
-      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST}
-      SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT}
     ports:
       - "6379:6379"
     networks:
@@ -44,14 +41,20 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # Database
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # Security
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      ACCESS_KEY: ${ACCESS_KEY}
-      SECRET_KEY: ${SECRET_KEY}
       ADMIN_NAME: ${ADMIN_NAME}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Yandex Storage
+      ACCESS_KEY: ${ACCESS_KEY}
+      SECRET_KEY: ${SECRET_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,4 +72,3 @@ networks:
 volumes:
   postgres_data:
   redis_data:
-  es_data:

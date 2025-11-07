@@ -19,7 +19,7 @@ import org.springframework.validation.annotation.Validated;
  */
 @Getter
 @Validated
-@ConfigurationProperties(prefix = "jwt")
+@ConfigurationProperties(prefix = "app.jwt")
 public class JwtTokenProperties {
 
     @NotBlank(message = "JWT secret key is required")
