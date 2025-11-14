@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.education.firstwebproject.exception.file.*;
+import org.education.firstwebproject.exception.ratelimit.RateLimitExceededException;
 import org.education.firstwebproject.exception.validation.FileUploadLimitExceededException;
 import org.education.firstwebproject.exception.user.UnauthorizedException;
 import org.education.firstwebproject.exception.user.UserAlreadyExistsException;
@@ -146,6 +147,13 @@ public class GlobalExceptionHandler {
     }
 
     // ========== HTTP REQUEST ==========
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public CommonResponse<Void> handleRateLimitExceeded(RateLimitExceededException ex) {
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+        return createErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Rate Limit Exceeded", ex.getMessage());
+    }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

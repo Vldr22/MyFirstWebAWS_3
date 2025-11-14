@@ -1,20 +1,21 @@
 # === Production Profile ===
+  yaml# === Production Profile ===
 
 spring:
-  # === Database (production server) ===
+  # === Database ===
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/firstWebProject}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
 
-  # === JPA (no SQL logging in production) ===
+  # === JPA (minimal logging) ===
   jpa:
     show-sql: false
     properties:
       hibernate:
         format_sql: false
 
-  # === Redis (production server) ===
+  # === Redis (for Redisson) ===
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:redis}

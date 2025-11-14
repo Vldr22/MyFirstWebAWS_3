@@ -17,6 +17,7 @@ public class Messages {
     public static final String REGISTRATION_SUCCESS = "Registration was successful! You can now log in!";
     public static final String INVALID_PASSWORD_OR_LOGIN = "Invalid password or login";
     public static final String LOGOUT_SUCCESS = "Logged out successfully";
+    public static final String REQUEST_LIMIT_EXCEEDED = "Request limit exceeded. Try later.";
 
     /**
      * Сообщения связанные с загрузкой файлов
