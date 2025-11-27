@@ -3,20 +3,21 @@ package org.education.firstwebproject.service.auth;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.education.firstwebproject.audit.AuditableOperation;
+import org.education.firstwebproject.model.enums.AuditOperation;
 import org.education.firstwebproject.model.enums.UserRole;
 import org.education.firstwebproject.model.entity.User;
-import org.education.firstwebproject.model.request.AuthRequest;
-import org.education.firstwebproject.model.response.LoginResponse;
+import org.education.firstwebproject.model.dto.AuthRequest;
+import org.education.firstwebproject.model.dto.LoginResponse;
 import org.education.firstwebproject.security.JwtCookieService;
 import org.education.firstwebproject.security.JwtTokenRedisService;
 import org.education.firstwebproject.security.JwtTokenService;
 import org.education.firstwebproject.exception.messages.Messages;
-import org.education.firstwebproject.service.security.SecurityUtils;
+import org.education.firstwebproject.utils.MySecurityUtils;
 import org.education.firstwebproject.service.user.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 /**
  * Сервис аутентификации пользователей.
@@ -36,6 +37,7 @@ public class AuthService {
      * Аутентифицирует пользователя и генерирует JWT токен.
      * Токен сохраняется в Redis для управления сессиями.
      */
+    @AuditableOperation(operation = AuditOperation.LOGIN)
     public LoginResponse login(AuthRequest request, HttpServletResponse response) {
         User user = verifyCredentials(request.getUsername(), request.getPassword());
         UserRole role = getUserRole(user);
@@ -55,6 +57,7 @@ public class AuthService {
     /**
      * Регистрирует нового пользователя с ролью ROLE_USER.
      */
+    @AuditableOperation(operation = AuditOperation.REGISTER)
     public void register(AuthRequest request) {
         userService.createUser(request.getUsername(), request.getPassword());
         log.info("User registered successfully: {}", request.getUsername());
@@ -63,8 +66,9 @@ public class AuthService {
     /**
      * Удаления и очистка токена из Cookie при выходе
      */
+    @AuditableOperation(operation = AuditOperation.LOGOUT)
     public void logout(HttpServletResponse response) {
-        String username = SecurityUtils.getCurrentUsername();
+        String username = MySecurityUtils.getCurrentUsername();
 
         jwtTokenRedisService.deleteUserToken(username);
         jwtCookieService.clearAuthCookie(response);

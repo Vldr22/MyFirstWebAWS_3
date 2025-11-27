@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.education.firstwebproject.exception.messages.Messages;
 import org.education.firstwebproject.model.entity.FileMetadata;
+import org.education.firstwebproject.model.enums.ScanStatus;
 import org.education.firstwebproject.repository.FileMetadataRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,16 +18,16 @@ public class FileMetadataService {
 
     private final FileMetadataRepository fileMetadataRepository;
 
-    public void saveDatabaseMetadata(MultipartFile file, String uniqueName,  String fileHash) {
+    public FileMetadata saveDatabaseMetadata(MultipartFile file, String uniqueName,  String fileHash) {
         FileMetadata metadata = FileMetadata.builder()
                 .uniqueName(uniqueName)
                 .originalName(file.getOriginalFilename())
                 .type(file.getContentType())
                 .size(file.getSize())
-                .fileHash(fileHash)
+                .fileHash(fileHash).scanStatus(ScanStatus.PENDING_SCAN)
                 .build();
 
-        fileMetadataRepository.save(metadata);
+        return fileMetadataRepository.save(metadata);
     }
 
     public void deleteDatabaseMetadata(String uniqueName) {

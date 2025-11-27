@@ -4,7 +4,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.education.firstwebproject.exception.file.*;
+import org.education.firstwebproject.model.entity.FileMetadata;
+import org.education.firstwebproject.service.kafka.FileEventService;
 import org.education.firstwebproject.service.storage.YandexStorageService;
+import org.education.firstwebproject.utils.MySecurityUtils;
 import org.education.firstwebproject.validation.ValidFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -28,6 +31,7 @@ public class FileOperationFacadeService {
     private final FileHashService fileHashService;
     private final YandexStorageService fileStorageService;
     private final FileMetadataService fileMetadataService;
+    private final FileEventService fileEventService;
 
     /**
      * Загружает файл в S3 и сохраняет метаданные в БД.
@@ -35,6 +39,7 @@ public class FileOperationFacadeService {
      */
     public void uploadFile(@ValidFile MultipartFile file) {
         String uniqueFileName = generateUniqueUUIDFileName(file.getOriginalFilename());
+        Long userId = MySecurityUtils.getCurrentUserId();
 
         try {
             byte[] bytes = file.getBytes();
@@ -46,7 +51,10 @@ public class FileOperationFacadeService {
 
             try {
 
-                fileMetadataService.saveDatabaseMetadata(file, uniqueFileName, fileHash);
+                FileMetadata saved = fileMetadataService.saveDatabaseMetadata(file, uniqueFileName, fileHash);
+
+                fileEventService.publishFileUploadEvent(saved, userId);
+
                 log.info("File uploaded successfully: {}", uniqueFileName);
             } catch (Exception dbEx) {
                 log.error("Error add fileMetadata in database file with original fileName{}",

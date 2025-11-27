@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.education.firstwebproject.model.enums.AllowedExtension;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +15,7 @@ import java.util.Arrays;
  * Валидатор для проверки загружаемых файлов.
  * Проверяет соответствие Content-Type и расширения файла разрешенным типам из {@link AllowedExtension}.
  */
+
 @Slf4j
 @RequiredArgsConstructor
 public class FileValidator implements ConstraintValidator<ValidFile, MultipartFile> {

@@ -29,6 +29,15 @@ spring:
       max-request-size: 30MB
       resolve-lazily: false
 
+  # === Kafka Configuration ===
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
 # === Yandex Object Storage ===
 yandex:
   storage:

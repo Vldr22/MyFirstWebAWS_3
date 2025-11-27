@@ -7,11 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.education.firstwebproject.model.CommonResponse;
 
-import org.education.firstwebproject.model.response.FileDownloadResponse;
-import org.education.firstwebproject.model.response.LoginResponse;
-import org.education.firstwebproject.model.response.MultipleUploadResponse;
+import org.education.firstwebproject.model.dto.FileDownloadResponse;
+import org.education.firstwebproject.model.dto.LoginResponse;
+import org.education.firstwebproject.model.dto.MultipleUploadResponse;
 import org.education.firstwebproject.service.file.FileManagementService;
-import org.education.firstwebproject.service.security.RateLimit;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.education.firstwebproject.exception.messages.Messages;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -42,7 +40,6 @@ public class FileController {
         return CommonResponse.success(loginResponse);
     }
 
-    @RateLimit(requests = 10, window = 1, unit = TimeUnit.HOURS, key = "file:upload")
     @PostMapping("/upload-multiple")
     @ResponseStatus(HttpStatus.CREATED)
     public CommonResponse<List<MultipleUploadResponse>> uploadMultiple(
@@ -55,7 +52,6 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    @RateLimit(requests = 5, window = 1, unit = TimeUnit.MINUTES, key = "download")
     public ResponseEntity<ByteArrayResource> download(
             @RequestParam
             @NotBlank(message = FILENAME_MUST_BE_NOT_EMPTY)
@@ -68,12 +64,12 @@ public class FileController {
                 .ok()
                 .contentLength(response.getSize())
                 .header("Content-Type", response.getContentType())
-                .header("Content-Disposition", "attachment; filename*=UTF-8''" + response.getFileName())
+                .header("Content-Disposition",
+                        "attachment; filename*=UTF-8''" + response.getFileName())
                 .body(resource);
     }
 
     @DeleteMapping("/delete")
-    @RateLimit(requests = 20, window = 1, key = "file:delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public CommonResponse<String> delete(
             @RequestParam

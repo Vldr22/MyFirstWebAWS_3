@@ -2,6 +2,7 @@ package org.education.firstwebproject.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.education.firstwebproject.model.enums.ScanStatus;
 
 @Entity
 @Getter
@@ -28,4 +29,8 @@ public class FileMetadata {
 
     @Column(length = 64, nullable = false, unique = true)
     private String fileHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ScanStatus scanStatus;
 }

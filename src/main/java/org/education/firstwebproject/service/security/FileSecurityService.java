@@ -5,9 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.education.firstwebproject.exception.messages.Messages;
 import org.education.firstwebproject.exception.validation.FileUploadLimitExceededException;
 import org.education.firstwebproject.model.enums.UserRole;
-import org.education.firstwebproject.model.response.LoginResponse;
+import org.education.firstwebproject.model.dto.LoginResponse;
 import org.education.firstwebproject.service.auth.AuthService;
 import org.education.firstwebproject.service.user.UserService;
+import org.education.firstwebproject.utils.MySecurityUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -25,11 +26,11 @@ public class FileSecurityService {
      *  @throws FileUploadLimitExceededException если пользователь (не админ) уже загружал файл
      */
     public void checkUploadPermission() {
-        if (SecurityUtils.hasRole(UserRole.ROLE_ADMIN.getAuthority())) {
+        if (MySecurityUtils.hasRole(UserRole.ROLE_ADMIN.getAuthority())) {
             return;
         }
 
-        if (SecurityUtils.hasRole(UserRole.ROLE_USER_ADDED.getAuthority())) {
+        if (MySecurityUtils.hasRole(UserRole.ROLE_USER_ADDED.getAuthority())) {
             throw new FileUploadLimitExceededException(
                     Messages.INABILITY_UPLOAD_MORE_THAN_ONE_FILE);
         }
@@ -40,9 +41,9 @@ public class FileSecurityService {
      * Для админа возвращает текущий токен без изменений.
      */
     public LoginResponse updateTokenAfterUpload(HttpServletResponse response) {
-        String username = SecurityUtils.getCurrentUsername();
+        String username = MySecurityUtils.getCurrentUsername();
 
-        if (SecurityUtils.hasRole(UserRole.ROLE_ADMIN.getAuthority())) {
+        if (MySecurityUtils.hasRole(UserRole.ROLE_ADMIN.getAuthority())) {
             return new LoginResponse(username, UserRole.ROLE_ADMIN.getRoleName());
         }
 

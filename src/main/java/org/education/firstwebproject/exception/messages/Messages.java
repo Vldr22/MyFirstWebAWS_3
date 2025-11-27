@@ -12,13 +12,12 @@ public class Messages {
      * Сообщения связанные с пользователем
      */
     public static final String USER_NOT_FOUND = "User not found with username: %s";
-    public static final String USER_ALREADY_EXISTS = "User already exists: ";
+    public static final String USER_ALREADY_EXISTS = "User already exists";
     public static final String ROLE_NOT_FOUND = "Role not found: %s";
     public static final String REGISTRATION_SUCCESS = "Registration was successful! You can now log in!";
     public static final String INVALID_PASSWORD_OR_LOGIN = "Invalid password or login";
     public static final String LOGOUT_SUCCESS = "Logged out successfully";
-    public static final String REQUEST_LIMIT_EXCEEDED = "Request limit exceeded. Try later.";
-
+    public static final String NOT_AUTHENTICATED = "No authenticated user";
     /**
      * Сообщения связанные с загрузкой файлов
      */
@@ -30,7 +29,15 @@ public class Messages {
     public static final String INABILITY_UPLOAD_MORE_THAN_ONE_FILE =
             "You have already uploaded a file. According to our service rules, one authorized user can only upload 1 file.";
     public static final String FILES_UPLOAD_ERROR = "Failed to upload all added files";
+    public static final String FILE_VALIDATION_FAILED = "File validation failed";
 
+    /**
+     * Сообщения связанные с jwt token
+     */
+
+    public final static String TOKEN_EXPIRED = "Token expired";
+    public final static String INVALID_TOKEN = "Invalid token";
+    public final static String MISMATCH_TOKEN = "Token is no longer valid for user: %s";
 
     /**
      * Сообщения связанные с удалением файлов

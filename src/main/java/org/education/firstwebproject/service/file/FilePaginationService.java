@@ -2,7 +2,7 @@ package org.education.firstwebproject.service.file;
 
 import lombok.RequiredArgsConstructor;
 import org.education.firstwebproject.model.entity.FileMetadata;
-import org.education.firstwebproject.model.response.FileResponse;
+import org.education.firstwebproject.model.dto.FileResponse;
 import org.education.firstwebproject.repository.FileMetadataRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

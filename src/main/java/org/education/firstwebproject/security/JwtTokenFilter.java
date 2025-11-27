@@ -8,7 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.education.firstwebproject.exception.messages.Messages;
+import org.education.firstwebproject.exception.user.UserNotFoundException;
 import org.education.firstwebproject.model.CommonResponse;
+import org.education.firstwebproject.model.entity.User;
+import org.education.firstwebproject.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +38,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenRedisService jwtTokenRedisService;
     private final JwtCookieService jwtCookieService;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -56,15 +61,18 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String username = jwtTokenService.extractSubject(token);
 
             if (!jwtTokenRedisService.isTokenValid(username, token)) {
-                sendError(response, request, "Token is no longer valid");
+                sendError(response, request, String.format(Messages.MISMATCH_TOKEN, username));
                 log.warn("Token mismatch for user: {}", username);
                 return;
             }
 
             String role = jwtTokenService.extractRole(token);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException(
+                            String.format(Messages.USER_NOT_FOUND, username)));
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    username,
+                    user,
                     null,
                     Collections.singletonList(new SimpleGrantedAuthority(role))
             );
@@ -73,11 +81,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             log.debug("Authentication successful - User: {}, Role: {}", username, role);
 
         } catch (ExpiredJwtException e) {
-            sendError(response, request, "Token expired");
+            sendError(response, request, Messages.TOKEN_EXPIRED);
             log.warn("Token expired for: {}", request.getRequestURI());
             return;
         } catch (Exception e) {
-            sendError(response, request, "Invalid token");
+            sendError(response, request, Messages.INVALID_TOKEN);
             log.error("Invalid token for: {}. Error: {}", request.getRequestURI(), e.getMessage());
             return;
         }

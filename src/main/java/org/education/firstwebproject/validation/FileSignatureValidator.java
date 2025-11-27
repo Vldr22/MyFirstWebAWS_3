@@ -1,5 +1,6 @@
 package org.education.firstwebproject.validation;
 
+import org.education.firstwebproject.model.enums.FileSignature;
 import org.springframework.stereotype.Service;
 
 @Service
